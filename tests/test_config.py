@@ -6,6 +6,15 @@ import chat_backend
 
 
 class DatabaseConfigTests(unittest.TestCase):
+    def test_missing_password_is_prompted_without_echo(self):
+        with patch.dict(os.environ, {}, clear=True), patch.object(
+            chat_backend, "_cached_client_db_password", None
+        ), patch.object(chat_backend, "getpass", return_value="StrongPassphrase2026!") as prompt:
+            config = chat_backend.get_db_config()
+
+        prompt.assert_called_once_with("Client database password: ")
+        self.assertEqual(config["password"], "StrongPassphrase2026!")
+
     def test_local_config_uses_expected_defaults(self):
         with patch.dict(os.environ, {"TEXTSERVICE_DB_PASSWORD": "StrongPassphrase2026!"}, clear=True):
             config = chat_backend.get_db_config()

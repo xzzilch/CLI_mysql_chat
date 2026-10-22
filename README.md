@@ -4,52 +4,54 @@ A small terminal chat client backed by MySQL stored procedures. The interactive 
 
 This project was built primarily with AI coding agents.
 
-## Requirements
+## Easy install
 
-- Python 3.10 or later
-- MySQL Connector/Python 9.2 or later for `provision_database.py` multi-statement provisioning (`fetchsets()` is used there)
-- A MySQL-compatible server with permission to create a database, tables, views, stored procedures, and the `client_user` account during provisioning
+You do not need Git or a GitHub account. Download the project ZIP from [this direct download link](https://github.com/xzzilch/CLI_mysql_chat/archive/refs/heads/main.zip), extract it, then:
 
-Install the Python connector in the environment used to run the scripts:
+- **Windows:** double-click `install_windows.bat` once, then double-click `start_chat_windows.bat` to open the client.
+- **macOS/Linux:** open Terminal in the extracted folder and run `./install_unix.sh` once, then `./start_chat_unix.sh` to open the client. If needed, make the scripts executable with `chmod +x install_unix.sh start_chat_unix.sh`.
+
+Install needs an internet connection to download Python packages. Python 3.10 or later must already be installed. On Windows, install it from [python.org](https://www.python.org/downloads/) and enable **Add Python to PATH**.
+
+The installer creates a local `.venv` and installs the dependencies. It does not change system-wide Python packages. The TUI uses Python's standard library; Windows installs the small `windows-curses` compatibility package automatically.
+
+## Database setup
+
+You need access to a MySQL-compatible database. For a new database, run the provisioning tool from the extracted project folder:
 
 ```sh
-python -m pip install -r requirements.txt
+.venv/bin/python provision_database.py
 ```
 
-## Provision the database
+On Windows use:
 
-Set a strong client database password in the environment. It must be 16 to 128 characters and use only ASCII letters, digits, and `!@#$%^&*()_+=.-`. Do not put it in source files or commit it.
-
-```sh
-read -rsp 'Client DB password: ' TEXTSERVICE_DB_PASSWORD
-export TEXTSERVICE_DB_PASSWORD
-printf '\n'
-python provision_database.py
+```bat
+.venv\Scripts\python.exe provision_database.py
 ```
 
-`provision_database.py` prompts for the server host, port, administrator username, and administrator password. The client database account created by the schema is `client_user`; the app uses the password supplied through `TEXTSERVICE_DB_PASSWORD`. Provisioning is non-destructive to existing database contents, but it replaces the stored procedures and resets the `client_user` password to the supplied value.
+The setup prompts for the database administrator account and the new client DB password. Passwords are entered without showing them on screen. The client password must be 16-128 characters using letters, numbers, and `!@#$%^&*()_+=.-`. Provisioning is non-destructive to existing database contents, but it replaces stored procedures and resets the `client_user` password.
 
 The schema lives in `text_service_schema.sql`. `DB_METADATA.json` contains the database name used by the SQL formatting helper; the current schema selects `text_service_db`.
 
 ### Existing installations
 
-Before applying the new schema to a database created by an older version, back it up and run the one-time password migration:
+For an existing database created by an older version, back it up and run the one-time password migration before provisioning the new schema:
 
 ```sh
-python migrate_passwords.py
+.venv/bin/python migrate_passwords.py
 ```
 
-The migration prompts for a database administrator account, derives salted PBKDF2 verifiers locally, and removes the legacy plaintext password column only after all accounts have been migrated. Existing accounts are preserved. If any existing password is outside the supported 12-255 character range, migration stops without changing credentials; resolve those accounts with the administrator before retrying. After migration succeeds, run `python provision_database.py` to install the new authentication procedures. For a new database, run `provision_database.py` directly.
+On Windows use `.venv\Scripts\python.exe migrate_passwords.py`. The migration prompts for database administrator credentials, derives salted PBKDF2 verifiers locally, and removes the old plaintext password column only after all accounts are migrated. Existing accounts are preserved. If a password is outside the supported 12-255 character range, migration stops; resolve that account before retrying. After migration succeeds, run the provisioning tool.
 
 ## Run the client
 
-Keep `TEXTSERVICE_DB_PASSWORD` set in the same shell, then start:
+Start the chat:
 
 ```sh
-python chat_cli.py
+./start_chat_unix.sh
 ```
 
-Optional connection settings:
+On Windows, double-click `start_chat_windows.bat`. The first launch prompts for the client DB password; you can also set `TEXTSERVICE_DB_PASSWORD` ahead of time. Optional connection settings are:
 
 - `TEXTSERVICE_DB_HOST`: database host; defaults to `localhost`.
 - `TEXTSERVICE_DB_PORT`: database port; defaults to `3306` and must be between 1 and 65535.

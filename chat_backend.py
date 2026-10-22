@@ -14,15 +14,25 @@ from getpass import getpass
 
 _DB_PASSWORD_PATTERN = re.compile(r"^[A-Za-z0-9!@#$%^&*()_+=.\-]{16,128}$")
 _PASSWORD_HASH_ITERATIONS = 600_000
+_cached_client_db_password = None
 
 
-def get_db_config():
-    password = os.environ.get("TEXTSERVICE_DB_PASSWORD", "")
+def _client_db_password():
+    global _cached_client_db_password
+    password = os.environ.get("TEXTSERVICE_DB_PASSWORD") or _cached_client_db_password
+    if not password:
+        password = getpass("Client database password: ")
     if not _DB_PASSWORD_PATTERN.fullmatch(password):
         raise ValueError(
             "TEXTSERVICE_DB_PASSWORD must be 16-128 characters and use only "
             "letters, numbers, and !@#$%^&*()_+=.-"
         )
+    _cached_client_db_password = password
+    return password
+
+
+def get_db_config():
+    password = _client_db_password()
 
     try:
         port_number = int(os.environ.get("TEXTSERVICE_DB_PORT", "3306"))
@@ -141,9 +151,7 @@ def sqlscript(sql_script="text_service_schema.sql", json_cfg="DB_METADATA.json")
                 script = f.read()
 
         if "__CLIENT_DB_PASSWORD__" in script:
-            password = os.environ.get("TEXTSERVICE_DB_PASSWORD", "")
-            if not _DB_PASSWORD_PATTERN.fullmatch(password):
-                raise ValueError("A valid TEXTSERVICE_DB_PASSWORD is required to provision the database")
+            password = _client_db_password()
             script = script.replace("__CLIENT_DB_PASSWORD__", password)
         return script
 

@@ -62,6 +62,15 @@ class TerminalUITests(unittest.TestCase):
         self.assertEqual(sent, ["hié"])
         self.assertTrue(screen.keypad_enabled)
         self.assertTrue(any("bob: welcome" in line for _, _, line in screen.lines))
+        self.assertTrue(any("LIVE" in line for _, _, line in screen.lines))
+
+    def test_messages_are_flattened_and_clipped_to_one_row(self):
+        flattened = terminal_ui._single_line("first line\nsecond line")
+        clipped = terminal_ui._clip(flattened, 12)
+
+        self.assertEqual(flattened, "first line second line")
+        self.assertEqual(len(clipped), 12)
+        self.assertNotIn("\n", clipped)
 
 
 if __name__ == "__main__":
