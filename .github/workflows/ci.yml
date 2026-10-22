@@ -24,4 +24,4 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
       - name: Compile source files
-        run: python -m py_compile chat_functions.py msgcli.py terminal_ui.py HOSTONLY.py openports.py migrate_passwords.py
+        run: python -m py_compile chat_backend.py chat_cli.py terminal_ui.py provision_database.py port_utils.py migrate_passwords.py

@@ -7,7 +7,7 @@ This project was built primarily with AI coding agents.
 ## Requirements
 
 - Python 3.10 or later
-- MySQL Connector/Python 9.2 or later for `HOSTONLY.py` multi-statement provisioning (`fetchsets()` is used there)
+- MySQL Connector/Python 9.2 or later for `provision_database.py` multi-statement provisioning (`fetchsets()` is used there)
 - A MySQL-compatible server with permission to create a database, tables, views, stored procedures, and the `client_user` account during provisioning
 
 Install the Python connector in the environment used to run the scripts:
@@ -24,10 +24,10 @@ Set a strong client database password in the environment. It must be 16 to 128 c
 read -rsp 'Client DB password: ' TEXTSERVICE_DB_PASSWORD
 export TEXTSERVICE_DB_PASSWORD
 printf '\n'
-python HOSTONLY.py
+python provision_database.py
 ```
 
-`HOSTONLY.py` prompts for the server host, port, administrator username, and administrator password. The client database account created by the schema is `client_user`; the app uses the password supplied through `TEXTSERVICE_DB_PASSWORD`. Provisioning is non-destructive to existing database contents, but it replaces the stored procedures and resets the `client_user` password to the supplied value.
+`provision_database.py` prompts for the server host, port, administrator username, and administrator password. The client database account created by the schema is `client_user`; the app uses the password supplied through `TEXTSERVICE_DB_PASSWORD`. Provisioning is non-destructive to existing database contents, but it replaces the stored procedures and resets the `client_user` password to the supplied value.
 
 The schema lives in `text_service_schema.sql`. `DB_METADATA.json` contains the database name used by the SQL formatting helper; the current schema selects `text_service_db`.
 
@@ -39,14 +39,14 @@ Before applying the new schema to a database created by an older version, back i
 python migrate_passwords.py
 ```
 
-The migration prompts for a database administrator account, derives salted PBKDF2 verifiers locally, and removes the legacy plaintext password column only after all accounts have been migrated. Existing accounts are preserved. If any existing password is outside the supported 12-255 character range, migration stops without changing credentials; resolve those accounts with the administrator before retrying. After migration succeeds, run `python HOSTONLY.py` to install the new authentication procedures. For a new database, run `HOSTONLY.py` directly.
+The migration prompts for a database administrator account, derives salted PBKDF2 verifiers locally, and removes the legacy plaintext password column only after all accounts have been migrated. Existing accounts are preserved. If any existing password is outside the supported 12-255 character range, migration stops without changing credentials; resolve those accounts with the administrator before retrying. After migration succeeds, run `python provision_database.py` to install the new authentication procedures. For a new database, run `provision_database.py` directly.
 
 ## Run the client
 
 Keep `TEXTSERVICE_DB_PASSWORD` set in the same shell, then start:
 
 ```sh
-python msgcli.py
+python chat_cli.py
 ```
 
 Optional connection settings:
@@ -61,7 +61,7 @@ For example, configure a remote host without embedding credentials in a command 
 ```sh
 export TEXTSERVICE_DB_HOST=db.example.net
 export TEXTSERVICE_DB_SSL_CA=/path/to/database-ca.pem
-python msgcli.py
+python chat_cli.py
 ```
 
 The login and registration application passwords are entered with terminal echo disabled. Registration requires a username (up to 50 characters), phone number (up to 20 characters), and an application password of at least 12 characters.
@@ -86,7 +86,7 @@ Run the unit tests and compile the project modules with:
 
 ```sh
 python -m unittest discover -s tests -v
-python -m py_compile chat_functions.py msgcli.py terminal_ui.py HOSTONLY.py openports.py migrate_passwords.py
+python -m py_compile chat_backend.py chat_cli.py terminal_ui.py provision_database.py port_utils.py migrate_passwords.py
 ```
 
 A live login/chat/provisioning check additionally requires a running database server and a provisioned schema.

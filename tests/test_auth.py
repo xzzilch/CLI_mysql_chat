@@ -2,25 +2,25 @@ import hashlib
 import unittest
 from unittest.mock import Mock, patch
 
-import chat_functions
+import chat_backend
 
 
 class PasswordAuthTests(unittest.TestCase):
     def test_verifier_is_salted_and_fixed_length(self):
-        first = chat_functions._derive_password_verifier("correct horse battery", b"a" * 16)
-        second = chat_functions._derive_password_verifier("correct horse battery", b"b" * 16)
+        first = chat_backend._derive_password_verifier("correct horse battery", b"a" * 16)
+        second = chat_backend._derive_password_verifier("correct horse battery", b"b" * 16)
 
         self.assertEqual(len(first), 32)
         self.assertNotEqual(first, second)
         with self.assertRaises(ValueError):
-            chat_functions._derive_password_verifier("short", b"a" * 16)
+            chat_backend._derive_password_verifier("short", b"a" * 16)
 
     def test_registration_sends_salt_and_verifier_not_plaintext(self):
         connection = Mock()
         cursor = connection.cursor.return_value
-        with patch.object(chat_functions, "get_conn", return_value=connection):
+        with patch.object(chat_backend, "get_conn", return_value=connection):
             self.assertTrue(
-                chat_functions.reg_user("alice", "5550100", "correct horse battery")
+                chat_backend.reg_user("alice", "5550100", "correct horse battery")
             )
 
         args = cursor.callproc.call_args.args[1]
@@ -51,10 +51,10 @@ class PasswordAuthTests(unittest.TestCase):
         connection = Mock()
         connection.cursor.return_value = cursor
 
-        with patch.object(chat_functions, "get_conn", return_value=connection):
-            result = chat_functions.login("alice", "correct horse battery")
+        with patch.object(chat_backend, "get_conn", return_value=connection):
+            result = chat_backend.login("alice", "correct horse battery")
 
-        verifier = chat_functions._derive_password_verifier("correct horse battery", salt)
+        verifier = chat_backend._derive_password_verifier("correct horse battery", salt)
         expected_response = hashlib.sha256(nonce + verifier).digest()
         self.assertEqual(result, (connection, cursor, token))
         self.assertEqual(

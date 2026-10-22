@@ -3,7 +3,7 @@ from getpass import getpass
 
 import mysql.connector
 
-from chat_functions import _derive_password_verifier
+from chat_backend import _derive_password_verifier
 
 
 def _connection_settings():

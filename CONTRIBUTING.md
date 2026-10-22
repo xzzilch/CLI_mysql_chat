@@ -10,7 +10,7 @@
 
 ```sh
 python -m unittest discover -s tests -v
-python -m py_compile chat_functions.py msgcli.py terminal_ui.py HOSTONLY.py openports.py
+python -m py_compile chat_backend.py chat_cli.py terminal_ui.py provision_database.py port_utils.py migrate_passwords.py
 ```
 
 Changes that modify `text_service_schema.sql` should describe the provisioning impact and whether existing installations require a schema migration or rerun.
