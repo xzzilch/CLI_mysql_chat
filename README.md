@@ -6,14 +6,31 @@ This project was built primarily with AI coding agents.
 
 ## Easy install
 
-You do not need Git or a GitHub account. Download the project ZIP from [this direct download link](https://github.com/xzzilch/CLI_mysql_chat/archive/refs/heads/main.zip), extract it, then:
+No Git command or GitHub account is required. You can either download the [project ZIP](https://github.com/xzzilch/CLI_mysql_chat/archive/refs/heads/main.zip) in your browser and extract it, or use the two-command setup below. Python 3.10 or later and an internet connection are required. On Windows, install Python from [python.org](https://www.python.org/downloads/) and enable **Add Python to PATH**.
 
-- **Windows:** double-click `install_windows.bat` once, then double-click `start_chat_windows.bat` to open the client.
-- **macOS/Linux:** open Terminal in the extracted folder and run `./install_unix.sh` once, then `./start_chat_unix.sh` to open the client. If needed, make the scripts executable with `chmod +x install_unix.sh start_chat_unix.sh`.
+### macOS/Linux
 
-Install needs an internet connection to download Python packages. Python 3.10 or later must already be installed. On Windows, install it from [python.org](https://www.python.org/downloads/) and enable **Add Python to PATH**.
+Run this first line to download, extract, and install. Run the second line for a new database; if your database is already provisioned, replace it with `./start_chat_unix.sh`.
 
-The installer creates a local `.venv` and installs the dependencies. It does not change system-wide Python packages. The TUI uses Python's standard library; Windows installs the small `windows-curses` compatibility package automatically.
+```sh
+curl -fL https://github.com/xzzilch/CLI_mysql_chat/archive/refs/heads/main.zip -o cli-chat.zip && project_dir=$(unzip -Z1 cli-chat.zip | sed -n '1s,/.*,,p') && unzip -q -o cli-chat.zip && cd "$project_dir" && chmod +x install_unix.sh start_chat_unix.sh && ./install_unix.sh
+.venv/bin/python provision_database.py && ./start_chat_unix.sh
+```
+
+### Windows PowerShell
+
+Run this first line to download, extract, and install. Run the second line for a new database; if your database is already provisioned, replace it with `& .\start_chat_windows.bat`.
+
+```powershell
+$ErrorActionPreference = 'Stop'; Invoke-WebRequest https://github.com/xzzilch/CLI_mysql_chat/archive/refs/heads/main.zip -OutFile cli-chat.zip; Expand-Archive cli-chat.zip -DestinationPath . -Force; Set-Location CLI_mysql_chat-main; .\install_windows.bat
+& .\.venv\Scripts\python.exe provision_database.py; if ($?) { & .\start_chat_windows.bat }
+```
+
+The installer creates a local `.venv` and installs dependencies without changing system-wide Python packages. It does not provision a database automatically because that step needs administrator credentials. During provisioning, it securely prompts for the database administrator and client DB passwords; chat startup prompts for the client DB password if it has not been configured in the environment.
+
+If you downloaded the ZIP in a browser instead, extract it, run `install_windows.bat` on Windows or `./install_unix.sh` on macOS/Linux, then use the appropriate provision/start commands above.
+
+The TUI uses Python's standard library; Windows installs the small `windows-curses` compatibility package automatically.
 
 ## Database setup
 
