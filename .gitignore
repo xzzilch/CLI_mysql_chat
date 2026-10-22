@@ -1,0 +1,16 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Local Python environments and build output
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
